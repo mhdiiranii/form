@@ -1,32 +1,34 @@
 "use client"
 
+import ApiCaller from "@/services/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { myUserData } from "../type";
+import { FaRegEyeSlash,FaRegEye} from "react-icons/fa6";
 
-export type myUserTypeForLogeIn = Array<{
-    id:number,
-    userName : string , 
-    password : string
-}>
-
-export const myUserForLogIn : myUserTypeForLogeIn = []
 
 const SignIn = () => {
 
 
-    const [userName,setUserName] = useState ('');
+    const [emile,setEmile] = useState ('');
     const [password,setPassword] = useState ('');
     const [error,setError] = useState<boolean> (false);
     const [logeIn , setLogeIn] = useState <boolean> (false)
+    const [myData,setMyData] = useState<myUserData|undefined>();
+    const [showPass,setShowPass] = useState(false);
 
     const router = useRouter()
 
-
+    useEffect(()=>{
+        ApiCaller().getUser()
+            .then(res => setMyData(res.data))
+    },[])
+    
     const handleSubmit = ()=>{
-        if(myUserForLogIn){
-            myUserForLogIn.filter((item)=>{
-                if(item.password == password && item.userName == userName){
+        if(myData?.length != 0){
+            myData?.filter((item)=>{
+                if(item.password == password && item.emile == emile){
                     setError(false)
                     router.push('/dashbord')
                 }else{
@@ -35,22 +37,21 @@ const SignIn = () => {
                 }
             })
         }else(
-            setError(false)
+            setError(true)
         )
      }
 
-     console.log(myUserForLogIn);
-     
+     const seePass = ()=>{
+        if(showPass)
+            setShowPass(false)
+        else
+            setShowPass(true)
+     }
 
 
     return ( 
         <div className="mt-4">
             <div className="flex justify-center items-center">
-                {error && (
-                    <h1 className="text-6xl text-red-500 font-serif font-semibold">
-                        error
-                    </h1>
-                )}
             </div>
             <form className="w-full flex items-center justify-center h-screen">
                 <div className={`flex  flex-col gap-8 px-16 py-20 rounded-lg animate-op border border-black -translate-y-10`}>
@@ -62,23 +63,41 @@ const SignIn = () => {
                         <input 
                             onChange={(e)=>{
                                 e.preventDefault(),
-                                setUserName(e.target.value)
+                                setEmile(e.target.value)
                             }} 
                             type="text" 
                             className="h-10 outline-none bg-blue-100 text-black px-3 rounded-lg " 
                             required
                         />
                     </div>
-                    <div className="flex gap-4 justify-between items-center">
+                    <div className="flex relative gap-4 justify-between items-center">
                         <label>Password</label> 
                         <input 
                             onChange={(e)=>{
                                 e.preventDefault(), 
                                 setPassword(e.target.value)
                             }}
-                            type="password" 
+                            type={showPass?'text':'password'}
                             className={`h-10 outline-none bg-blue-100 ${error&&'border-2 border-red-500'} outline-none text-black px-3 rounded-lg`}
                         />
+                        <div className="absolute right-3">
+                            {!showPass ? (
+                                <button 
+                                    type="button" 
+                                    onClick={seePass}
+                                >
+                                    <FaRegEye/>
+                                </button>
+                            ):(
+                                <button 
+                                    type="button" 
+                                    onClick={seePass}
+                                >
+                                    <FaRegEyeSlash/>
+                                </button>
+                            )
+                            }
+                        </div>
                     </div>
                     <div className="flex justify-center translate-y-10 gap-4">
                         <button 
