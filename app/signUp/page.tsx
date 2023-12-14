@@ -1,38 +1,54 @@
 "use client"
 
 import { useState } from "react";
-import Link from "next/link";
-import { myUserForLogIn } from "../signIn/page";
 import { useRouter } from "next/navigation";
+import ApiCaller from "@/services/api";
+import { FaRegEyeSlash,FaRegEye} from "react-icons/fa6";
 
 const SignUp = () => {
 
     const router = useRouter()
-    const [userName,setUserName] = useState ('');
+    const [emile,setEmile] = useState ('');
     const [password,setPassword] = useState ('');
     const [repeat,setRepeat] = useState ('');
     const [error,setError] = useState<boolean> (false);
+    const [showPass,setShowPass] = useState(false);
+    const [showRepPass,setShowRepPass] = useState(false)
+
+
+    function isValidPassword(p:string){
+        return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,32}$/.test(p);
+    }
+    function isValidEmail(e:string){
+        return /\S+@\S+\.\S+/.test(e);
+      }
 
     const handleSubmit = ()=>{
-        if( userName && password.valueOf() == repeat.valueOf()){
-             if(userName.length >=6 && password.length >=6 && repeat.length >=6){
-                 const dynamicId = myUserForLogIn.length + 1
-                 setError(false)
-                 myUserForLogIn.push(
-                     {
-                         id:dynamicId,
-                         userName : userName , 
-                         password : password
-                     }
-                 )
-                 router.push('/signIn')
-             }else{
-                 setError(true)
-             }
+        if(isValidEmail(emile) && isValidPassword(password) && password == repeat){
+            console.log('true')
+            setError(false)
+            ApiCaller().newUser({
+                emile : emile,
+                password : password
+            })
+            router.push('signIn')
+        }else{
+            console.log('false')
+            setError(true)
         }
-        else{
-         setError(true)
-        }
+     }
+
+     const seePass = ()=>{
+        if(showPass)
+            setShowPass(false)
+        else
+            setShowPass(true)
+     }
+     const seeRepPass = ()=>{
+        if(showRepPass)
+            setShowRepPass(false)
+        else
+            setShowRepPass(true)
      }
 
     return ( 
@@ -43,32 +59,69 @@ const SignUp = () => {
                         <h1 className="text-4xl font-semibold">Sign Up</h1>
                    </div>
                     <div className="flex gap-4 justify-between items-center">
-                        <label >Username</label>
+                        <label >Emile</label>
                         <input 
                             onChange={(e)=>{
                                 e.preventDefault()
-                                setUserName(e.target.value)
+                                setEmile(e.target.value)
                             }} 
                             type="text" 
                             className="h-10 text-black px-3 outline-none rounded-lg bg-blue-100" 
                         />
                     </div>
-                    <div className="flex gap-4 justify-between items-center">
+                    <div className="flex relative gap-4 justify-between items-center">
                         <label>Password</label> 
                         <input 
                             onChange={(e)=> setPassword(e.target.value)} 
                             value = {password}
-                            type="password" 
+                            type={showPass?'text':'password'} 
                             className={`h-10 outline-none bg-blue-100 ${error&&'border-2 border-red-500'} outline-none text-black px-3 rounded-lg`}
                         />
+                        <div className="absolute right-3">
+                            {!showPass ? (
+                                <button 
+                                    type="button" 
+                                    onClick={seePass}
+                                >
+                                    <FaRegEye/>
+                                </button>
+                            ):(
+                                <button 
+                                    type="button" 
+                                    onClick={seePass}
+                                >
+                                    <FaRegEyeSlash/>
+                                </button>
+                            )
+                            }
+                        </div>
                     </div>
-                    <div className="flex gap-4 justify-between items-center">
+                    <div className="flex relative gap-4 justify-between items-center">
                         <label>Repeat Password</label>
                         <input 
                             onChange={(e)=> setRepeat(e.target.value)}  
-                            type="password" 
-                            className={`h-10 outline-none bg-blue-100 ${error&&'border-2 border-red-500'} outline-none text-black px-3 rounded-lg`} 
+                            type={showRepPass? 'text' : 'password' } 
+                            className={`h-10  outline-none bg-blue-100 ${error&&'border-2 border-red-500'} outline-none text-black px-3 rounded-lg`} 
                         />
+                        <div className="absolute right-3">
+                            {!showRepPass ? (
+                                <button 
+                                    type="button" 
+                                    onClick={seeRepPass}
+                                >
+                                    <FaRegEye/>
+                                </button>
+                            ):(
+                                <button 
+                                    type="button" 
+                                    onClick={seeRepPass}
+                                >
+                                    <FaRegEyeSlash/>
+                                </button>
+                            )
+
+                            }
+                        </div>
                     </div>
                     <div className="flex justify-center translate-y-10 gap-4">
                         {/* <Link 
